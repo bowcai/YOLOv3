@@ -1,3 +1,10 @@
+/data/
+
+.DS_Store
+__MACOSX
+.vscode
+.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
