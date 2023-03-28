@@ -74,7 +74,7 @@ def convert_weight(pre_trained_weight_dir, keras_model_dir):
 
     weight_reader = WeightReader(pre_trained_weight_dir)
     weight_reader.load_weights(model)
-    model.save(keras_model_dir)
+    save_keras_model(model, keras_model_dir)
 
 
 def load_keras_model(model_dir):
@@ -82,3 +82,8 @@ def load_keras_model(model_dir):
     if not os.path.isfile(model_dir):
         convert_weight(PRE_TRAINED_WEIGHT_PATH, model_dir)
     return load_model(model_dir)
+
+
+def save_keras_model(model, model_dir):
+    """ Save the model to specified directory """
+    model.save(model_dir)
