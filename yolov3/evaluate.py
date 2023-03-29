@@ -1,5 +1,6 @@
 import numpy as np
-from .box import get_yolo_boxes, compute_overlap
+from .box import compute_overlap
+from .predict import get_yolo_boxes
 
 
 def compute_ap(recall, precision):
