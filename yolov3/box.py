@@ -79,6 +79,32 @@ def bbox_iou(box1, box2):
     return float(intersect) / union
 
 
+def compute_overlap(a, b):
+    """
+    Compute the IoU overlap between each pair of predicted boxes and ground truth boxes.
+    :param a: N predicted boxes in (N, 4) ndarray of float.
+    :param b: K ground truth boxes in (K, 4) ndarray of float.
+    :return: The IoU overlap between each pair of predicted boxes and ground truth boxes
+        in (N, K) ndarray of float.
+    """
+
+    area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
+
+    iw = np.minimum(np.expand_dims(a[:, 2], axis=1), b[:, 2]) - np.maximum(np.expand_dims(a[:, 0], 1), b[:, 0])
+    ih = np.minimum(np.expand_dims(a[:, 3], axis=1), b[:, 3]) - np.maximum(np.expand_dims(a[:, 1], 1), b[:, 1])
+
+    iw = np.maximum(iw, 0)
+    ih = np.maximum(ih, 0)
+
+    ua = np.expand_dims((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), axis=1) + area - iw * ih
+
+    ua = np.maximum(ua, np.finfo(float).eps)
+
+    intersection = iw * ih
+
+    return intersection / ua
+
+
 def sigmoid(x):
     return expit(x)
 
@@ -234,29 +260,3 @@ def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
         boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
         boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
         boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)
-
-
-def compute_overlap(a, b):
-    """
-    Compute the IoU overlap between each pair of predicted boxes and ground truth boxes.
-    :param a: N predicted boxes in (N, 4) ndarray of float.
-    :param b: K ground truth boxes in (K, 4) ndarray of float.
-    :return: The IoU overlap between each pair of predicted boxes and ground truth boxes
-        in (N, K) ndarray of float.
-    """
-
-    area = (b[:, 2] - b[:, 0]) * (b[:, 3] - b[:, 1])
-
-    iw = np.minimum(np.expand_dims(a[:, 2], axis=1), b[:, 2]) - np.maximum(np.expand_dims(a[:, 0], 1), b[:, 0])
-    ih = np.minimum(np.expand_dims(a[:, 3], axis=1), b[:, 3]) - np.maximum(np.expand_dims(a[:, 1], 1), b[:, 1])
-
-    iw = np.maximum(iw, 0)
-    ih = np.maximum(ih, 0)
-
-    ua = np.expand_dims((a[:, 2] - a[:, 0]) * (a[:, 3] - a[:, 1]), axis=1) + area - iw * ih
-
-    ua = np.maximum(ua, np.finfo(float).eps)
-
-    intersection = iw * ih
-
-    return intersection / ua
