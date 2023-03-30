@@ -1,8 +1,123 @@
+import os
+import xml.etree.ElementTree as ET
+import pickle
 import cv2
 import numpy as np
 from keras.utils import Sequence
 from .box import BoundBox, bbox_iou
-from .preprocess import random_scale_and_crop, random_distort_image, random_flip, correct_bounding_boxes
+from .preprocess import random_scale_and_crop, random_distort_image, random_flip, correct_bounding_boxes, normalize
+
+
+def parse_voc_annotation(ann_dir, img_dir, cache_name, labels=None):
+    """ Parse the annotation of VOC dataset. """
+    if os.path.exists(cache_name):
+        with open(cache_name, 'rb') as handle:
+            cache = pickle.load(handle)
+        all_insts, seen_labels = cache['all_insts'], cache['seen_labels']
+    else:
+        all_insts = []
+        seen_labels = {}
+
+        for ann in sorted(os.listdir(ann_dir)):
+            img = {'object': []}
+
+            try:
+                tree = ET.parse(ann_dir + ann)
+            except Exception as e:
+                print(e)
+                print('Ignore this bad annotation: ' + ann_dir + ann)
+                continue
+
+            for elem in tree.iter():
+                if 'filename' in elem.tag:
+                    img['filename'] = img_dir + elem.text
+                if 'width' in elem.tag:
+                    img['width'] = int(elem.text)
+                if 'height' in elem.tag:
+                    img['height'] = int(elem.text)
+                if 'object' in elem.tag or 'part' in elem.tag:
+                    obj = {}
+
+                    for attr in list(elem):
+                        if 'name' in attr.tag:
+                            obj['name'] = attr.text
+
+                            if obj['name'] in seen_labels:
+                                seen_labels[obj['name']] += 1
+                            else:
+                                seen_labels[obj['name']] = 1
+
+                            if labels is not None and len(labels) > 0 and obj['name'] not in labels:
+                                break
+                            else:
+                                img['object'].append([obj])
+
+                        if 'bndbox' in attr.tag:
+                            for dim in list(attr):
+                                if 'xmin' in dim.tag:
+                                    obj['xmin'] = int(round(float(dim.text)))
+                                if 'ymin' in dim.tag:
+                                    obj['ymin'] = int(round(float(dim.text)))
+                                if 'xmax' in dim.tag:
+                                    obj['xmax'] = int(round(float(dim.text)))
+                                if 'ymax' in dim.tag:
+                                    obj['ymax'] = int(round(float(dim.text)))
+
+            if len(img['object']) > 0:
+                all_insts.append([img])
+
+        cache = {'all_insts': all_insts, 'seen_labels': seen_labels}
+        with open(cache_name, 'wb') as handle:
+            pickle.dump(cache, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    return all_insts, seen_labels
+
+
+def create_training_instances(
+    train_annot_folder,
+    train_image_folder,
+    train_cache,
+    valid_annot_folder=None,
+    valid_image_folder=None,
+    valid_cache=None,
+    labels=None,
+):
+    """ Create the instances of training and validation set from given directory. """
+
+    # parse annotations of the training set
+    train_inst, train_labels = parse_voc_annotation(train_annot_folder, train_image_folder, train_cache, labels)
+
+    # parse annotations of the validation set, if any, otherwise split the training set
+    if os.path.exists(valid_annot_folder):
+        valid_inst, valid_labels = parse_voc_annotation(valid_annot_folder, valid_image_folder, valid_cache, labels)
+    else:
+        print("valid_annot_folder not exists. Spliting the trainining set.")
+
+        train_valid_split = int(0.8*len(train_inst))
+        np.random.shuffle(train_inst)
+
+        valid_inst = train_inst[train_valid_split:]
+        train_inst = train_inst[:train_valid_split]
+
+    # compare the seen labels with the given labels in config.json
+    if labels is not None and len(labels) > 0:
+        overlap_labels = set(labels).intersection(set(train_labels.keys()))
+
+        print('Seen labels: \t' + str(train_labels) + '\n')
+        print('Given labels: \t' + str(labels))
+
+        # return None, None, None if some given label is not in the dataset
+        if len(overlap_labels) < len(labels):
+            print('Some labels have no annotations! Please revise the list of labels in the config.json.')
+            return None, None, None
+    else:
+        print('No labels are provided. Train on all seen labels.')
+        print(train_labels)
+        labels = train_labels.keys()
+
+    max_box_per_image = max([len(inst['object']) for inst in (train_inst + valid_inst)])
+
+    return train_inst, valid_inst, sorted(labels), max_box_per_image
 
 
 class BatchGenerator(Sequence):
@@ -24,7 +139,7 @@ class BatchGenerator(Sequence):
                  net_w=416,
                  shuffle=True,
                  jitter=True,
-                 norm=None
+                 norm=True
                  ):
         self.instances = instances
         self.batch_size = batch_size
@@ -140,8 +255,8 @@ class BatchGenerator(Sequence):
                 true_box_index = true_box_index % self.max_box_per_image
 
             # assign input image to x_batch
-            if self.norm is not None:
-                x_batch[instance_count] = self.norm(img)
+            if self.norm:
+                x_batch[instance_count] = normalize(img)
             else:
                 # plot image and bounding boxes for sanity check
                 for obj in all_objs:

@@ -1,3 +1,4 @@
+import tensorflow as tf
 from keras.layers import Input, Conv2D, BatchNormalization, LeakyReLU, ZeroPadding2D, UpSampling2D
 from keras.models import Model
 from keras.layers import Add, Concatenate
@@ -145,3 +146,7 @@ def make_yolov3_model():
 
     model = Model(input_image, [yolo_82, yolo_94, yolo_106])
     return model
+
+
+def dummy_loss(y_true, y_pred):
+    return tf.sqrt(tf.reduce_sum(y_pred))
