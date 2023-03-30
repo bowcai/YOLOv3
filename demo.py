@@ -2,7 +2,7 @@ import os
 
 from yolov3.load_data import create_training_instances, BatchGenerator
 from yolov3.load_weight import load_keras_model, save_keras_model
-from yolov3.model import create_model
+from yolov3.model import create_yolov3_model
 from yolov3.train import fit_model
 from yolov3.evaluate import evaluate
 
@@ -19,6 +19,19 @@ labels = []
 
 # Batch size.
 batch_size = 16
+
+# Warmup batches.
+warmup_batches = 3
+
+# If the IoU of predicted bounding box with any ground truth box is higher than the threshold,
+# ignore the loss of the predicted box.
+ignore_thresh = 0.5
+
+grid_scales = [1, 1, 1]
+obj_scale = 5
+noobj_scale = 1
+xywh_scale = 1
+class_scale = 1
 
 # Minimum and maximum input size.
 min_input_size = 288
@@ -79,22 +92,19 @@ if __name__ == '__main__':
         train_model = load_keras_model(keras_model_path)
 
     else:
-        train_model, infer_model = create_model(
+        train_model, infer_model = create_yolov3_model(
             nb_class=len(labels),
-            anchors=config['model']['anchors'],
+            anchors=anchors,
             max_box_per_image=max_box_per_image,
-            max_grid=[config['model']['max_input_size'], config['model']['max_input_size']],
-            batch_size=config['train']['batch_size'],
+            max_grid=[max_input_size, max_input_size],
+            batch_size=batch_size,
             warmup_batches=warmup_batches,
-            ignore_thresh=config['train']['ignore_thresh'],
-            multi_gpu=multi_gpu,
-            saved_weights_name=config['train']['saved_weights_name'],
-            lr=config['train']['learning_rate'],
-            grid_scales=config['train']['grid_scales'],
-            obj_scale=config['train']['obj_scale'],
-            noobj_scale=config['train']['noobj_scale'],
-            xywh_scale=config['train']['xywh_scale'],
-            class_scale=config['train']['class_scale'],
+            ignore_thresh=ignore_thresh,
+            grid_scales=grid_scales,
+            obj_scale=obj_scale,
+            noobj_scale=noobj_scale,
+            xywh_scale=xywh_scale,
+            class_scale=class_scale,
         )
 
     # Fit the model.
