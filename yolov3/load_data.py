@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from keras.utils import Sequence
 from .box import BoundBox, bbox_iou
-from .preprocess import apply_random_scale_and_crop, random_distort_image, random_flip, correct_bounding_boxes
+from .preprocess import random_scale_and_crop, random_distort_image, random_flip, correct_bounding_boxes
 
 
 class BatchGenerator(Sequence):
@@ -194,7 +194,7 @@ class BatchGenerator(Sequence):
         dy = int(np.random.uniform(0, net_h - new_h))
 
         # apply scaling and cropping
-        im_sized = apply_random_scale_and_crop(image, new_w, new_h, net_w, net_h, dx, dy)
+        im_sized = random_scale_and_crop(image, new_w, new_h, net_w, net_h, dx, dy)
 
         # randomly distort hsv space
         im_sized = random_distort_image(im_sized)
