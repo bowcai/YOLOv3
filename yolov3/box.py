@@ -7,7 +7,7 @@ import cv2
 
 class BoundBox:
     """
-    BoundBox is a predicted bounding box of an object.
+    BoundBox is a bounding box of an object.
     The fields include the position, objectness and class of the bounding box.
     """
 

@@ -5,10 +5,12 @@ from keras.models import load_model
 from .model import make_yolov3_model
 
 
+# The path of pre-trained YOLOv3 weights.
 PRE_TRAINED_WEIGHT_PATH = '../weights/yolov3.weights'
 
 
 class WeightReader:
+    """ A reader to decode the pre-trained YOLOv3 weights and load them into a Keras model. """
     def __init__(self, weight_file):
         with open(weight_file, 'rb') as w_f:
             major, = struct.unpack('i', w_f.read(4))

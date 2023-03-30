@@ -5,6 +5,7 @@ from matplotlib.patches import Rectangle
 
 
 def draw_boxes(filename, v_boxes, v_labels, v_scores):
+    """ Draw the predicted bounding boxes in an image with Matplotlib. """
     # load the image
     data = plt.imread(filename)
     # plot the image
