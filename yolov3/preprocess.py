@@ -102,3 +102,61 @@ def random_scale_and_crop(image, new_w, new_h, net_w, net_h, dx, dy):
         im_sized = np.pad(im_sized, ((0, net_h - (new_h + dy)), (0, 0), (0, 0)), mode='constant', constant_values=127)
 
     return im_sized[:net_h, :net_w, :]
+
+
+def preprocess_input(image, net_h, net_w):
+    """
+    Convert the image with any size to the pre-defined network input size.
+    :param image: The input image.
+    :param net_h: The pre-defined height of the input to the network.
+    :param net_w: The pre-defined width of the input to the network.
+    :return: The converted image with (net_h, net_w) size.
+    """
+    new_h, new_w, _ = image.shape
+
+    # determine the new size of the image
+    if (float(net_w) / new_w) < (float(net_h) / new_h):
+        new_h = (new_h * net_w) // new_w
+        new_w = net_w
+    else:
+        new_w = (new_w * net_h) // new_h
+        new_h = net_h
+
+    # resize the image to the new size
+    resized = cv2.resize(image[:, :, ::-1] / 255., (new_w, new_h))
+
+    # embed the image into the standard letter box
+    new_image = np.ones((net_h, net_w, 3)) * 0.5
+    new_image[(net_h - new_h) // 2:(net_h + new_h) // 2, (net_w - new_w) // 2:(net_w + new_w) // 2, :] = resized
+    new_image = np.expand_dims(new_image, 0)
+
+    return new_image
+
+
+def correct_yolo_boxes(boxes, image_h, image_w, net_h, net_w):
+    """
+    Correct the sizes of the bounding boxes for the shape of the image.
+    Bounding boxes will be stretched back into the shape of the original image.
+    Will allow plotting the original image and draw the bounding boxes, hopefully detecting real objects.
+    :param boxes: The predicted bounding boxes for one image.
+    :param image_h: The height of real image.
+    :param image_w: The width of real image.
+    :param net_h: The height of input to the network.
+    :param net_w: The width of input to the network.
+    :return:
+    """
+    if (float(net_w) / image_w) < (float(net_h) / image_h):
+        new_w = net_w
+        new_h = (image_h * net_w) / image_w
+    else:
+        new_h = net_w
+        new_w = (image_w * net_h) / image_h
+
+    for i in range(len(boxes)):
+        x_offset, x_scale = (net_w - new_w) / 2. / net_w, float(new_w) / net_w
+        y_offset, y_scale = (net_h - new_h) / 2. / net_h, float(new_h) / net_h
+
+        boxes[i].xmin = int((boxes[i].xmin - x_offset) / x_scale * image_w)
+        boxes[i].xmax = int((boxes[i].xmax - x_offset) / x_scale * image_w)
+        boxes[i].ymin = int((boxes[i].ymin - y_offset) / y_scale * image_h)
+        boxes[i].ymax = int((boxes[i].ymax - y_offset) / y_scale * image_h)

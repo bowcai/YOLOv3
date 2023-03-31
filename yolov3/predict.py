@@ -1,5 +1,6 @@
 import numpy as np
-from .box import preprocess_input, decode_netout, correct_yolo_boxes, do_nms
+from .box import decode_netout, do_nms
+from .preprocess import preprocess_input, correct_yolo_boxes
 
 
 def get_yolo_boxes(model, images, net_h, net_w, anchors, obj_thresh, nms_thresh):
