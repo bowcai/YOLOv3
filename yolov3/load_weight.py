@@ -1,12 +1,6 @@
-import os
 import struct
 import numpy as np
 from keras.models import load_model
-from .model import make_yolov3_model
-
-
-# The path of pre-trained YOLOv3 weights.
-PRE_TRAINED_WEIGHT_PATH = '../weights/yolov3.weights'
 
 
 class WeightReader:
@@ -70,19 +64,20 @@ class WeightReader:
         self.offset = 0
 
 
-def convert_weight(pre_trained_weight_dir, keras_model_dir):
-    """ Convert the pre-trained weight to a Keras model. """
-    model = make_yolov3_model()
-
-    weight_reader = WeightReader(pre_trained_weight_dir)
+def load_pretrained_weight(model, pretrained_weight_dir, keras_model_dir=None):
+    """
+    Load the pre-trained weight to a Keras model.
+    Save the model to keras_model_dir if specified.
+    """
+    weight_reader = WeightReader(pretrained_weight_dir)
     weight_reader.load_weights(model)
-    save_keras_model(model, keras_model_dir)
+
+    if keras_model_dir is not None:
+        save_keras_model(model, keras_model_dir)
 
 
 def load_keras_model(model_dir):
     """ Load trained Keras model """
-    if not os.path.isfile(model_dir):
-        convert_weight(PRE_TRAINED_WEIGHT_PATH, model_dir)
     return load_model(model_dir)
 
 

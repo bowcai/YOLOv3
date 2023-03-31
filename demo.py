@@ -1,7 +1,7 @@
 import os
 
 from yolov3.load_data import create_training_instances, BatchGenerator
-from yolov3.load_weight import load_keras_model, save_keras_model
+from yolov3.load_weight import load_keras_model, save_keras_model, load_pretrained_weight
 from yolov3.model import create_yolov3_model
 from yolov3.train import fit_model
 from yolov3.evaluate import evaluate
@@ -42,6 +42,9 @@ anchors = [55, 69, 75, 234, 133, 240, 136, 129, 142, 363, 203, 290, 228, 184, 28
 
 # Ratio between network input's size and network output's size, 32 for YOLOv3.
 downsample = 32
+
+# The path of pre-trained YOLOv3 weights.
+pretrained_weight_path = './weights/yolov3.weights'
 
 # The path of trained Keras model.
 keras_model_path = './weights/trained_model.h5'
@@ -106,6 +109,9 @@ if __name__ == '__main__':
             xywh_scale=xywh_scale,
             class_scale=class_scale,
         )
+
+        # Load the pre-trained weights into the training model.
+        load_pretrained_weight(train_model, pretrained_weight_path, keras_model_path)
 
     # Fit the model.
     fit_model(train_model, train_generator, valid_generator)
