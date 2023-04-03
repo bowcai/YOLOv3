@@ -115,7 +115,7 @@ def create_training_instances(
         print(train_labels)
         labels = train_labels.keys()
 
-    max_box_per_image = max([len(inst['object']) for inst in (train_inst + valid_inst)])
+    max_box_per_image = max([len(inst[0]['object']) for inst in (train_inst + valid_inst)])
 
     return train_inst, valid_inst, sorted(labels), max_box_per_image
 
