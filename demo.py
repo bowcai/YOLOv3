@@ -7,11 +7,11 @@ from yolov3.train import fit_model
 from yolov3.evaluate import evaluate
 
 # The path of training and validation set.
-train_img_folder = ''
 train_annot_folder = ''
+train_img_folder = ''
 train_cache_dir = ''
-valid_img_folder = None
 valid_annot_folder = None
+valid_img_folder = None
 valid_cache_dir = None
 
 # The labels of object classes.
@@ -52,11 +52,11 @@ keras_model_path = './weights/trained_model.h5'
 if __name__ == '__main__':
     # Create training and validation dataset
     train_inst, valid_inst, labels, max_box_per_image = create_training_instances(
-        train_img_folder,
         train_annot_folder,
+        train_img_folder,
         train_cache_dir,
-        valid_img_folder,
         valid_annot_folder,
+        valid_img_folder,
         valid_cache_dir,
         labels
     )

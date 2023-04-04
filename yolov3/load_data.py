@@ -109,7 +109,7 @@ def create_training_instances(
         # return None, None, None if some given label is not in the dataset
         if len(overlap_labels) < len(labels):
             print('Some labels have no annotations! Please revise the list of labels in the config.json.')
-            return None, None, None
+            return None, None, None, None
     else:
         print('No labels are provided. Train on all seen labels.')
         print(train_labels)
