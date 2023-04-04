@@ -50,7 +50,7 @@ def parse_voc_annotation(ann_dir, img_dir, cache_name, labels=None):
                             if labels is not None and len(labels) > 0 and obj['name'] not in labels:
                                 break
                             else:
-                                img['object'].append([obj])
+                                img['object'].append(obj)
 
                         if 'bndbox' in attr.tag:
                             for dim in list(attr):
@@ -64,7 +64,7 @@ def parse_voc_annotation(ann_dir, img_dir, cache_name, labels=None):
                                     obj['ymax'] = int(round(float(dim.text)))
 
             if len(img['object']) > 0:
-                all_insts.append([img])
+                all_insts.append(img)
 
         cache = {'all_insts': all_insts, 'seen_labels': seen_labels}
         with open(cache_name, 'wb') as handle:
@@ -115,7 +115,7 @@ def create_training_instances(
         print(train_labels)
         labels = train_labels.keys()
 
-    max_box_per_image = max([len(inst[0]['object']) for inst in (train_inst + valid_inst)])
+    max_box_per_image = max([len(inst['object']) for inst in (train_inst + valid_inst)])
 
     return train_inst, valid_inst, sorted(labels), max_box_per_image
 
@@ -338,7 +338,8 @@ class BatchGenerator(Sequence):
         anchors = []
 
         for anchor in self.anchors:
-            anchors.append([anchor.xmax, anchor.ymax])
+            anchors.append(anchor.xmax)
+            anchors.append(anchor.ymax)
 
         return anchors
 
@@ -347,7 +348,7 @@ class BatchGenerator(Sequence):
 
         for obj in self.instances[i]['object']:
             annot = [obj['xmin'], obj['ymin'], obj['xmax'], obj['ymax'], self.labels.index(obj['name'])]
-            annots.append([annot])
+            annots.append(annot)
 
         if len(annots) == 0:
             annots = [[]]
