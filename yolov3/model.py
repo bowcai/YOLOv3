@@ -28,6 +28,8 @@ class YoloLayer(Layer):
         cell_y = tf.transpose(cell_x, (0, 2, 1, 3, 4))
         self.cell_grid = tf.tile(tf.concat([cell_x, cell_y], -1), [batch_size, 1, 1, 3, 1])
 
+        self._batch_seen = tf.Variable(0.)
+
         super(YoloLayer, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -43,7 +45,7 @@ class YoloLayer(Layer):
         object_mask = tf.expand_dims(y_true[..., 4], 4)
 
         # the variable to keep track of number of batches processed
-        batch_seen = tf.Variable(0.)
+        self._batch_seen.assign(0.)
 
         # compute grid factor and net factor
         grid_h = tf.shape(y_true)[1]
@@ -149,9 +151,9 @@ class YoloLayer(Layer):
         """
         Warm-up training
         """
-        batch_seen = batch_seen.assign_add(1.)
+        self._batch_seen = self._batch_seen.assign_add(1.)
 
-        true_box_xy, true_box_wh, xywh_mask = tf.cond(tf.less(batch_seen, self.warmup_batches + 1),
+        true_box_xy, true_box_wh, xywh_mask = tf.cond(tf.less(self._batch_seen, self.warmup_batches + 1),
                                                       lambda: [true_box_xy + (
                                                               0.5 + self.cell_grid[:, :grid_h, :grid_w, :, :]) * (
                                                                        1 - object_mask),

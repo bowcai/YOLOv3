@@ -32,8 +32,8 @@ def fit_model(
         verbose=1
     )
 
-    model.fit_generator(
-        generator=train_generator,
+    model.fit(
+        x=train_generator,
         steps_per_epoch=len(train_generator) * train_times_per_epoch,
         epochs=num_epochs,
         verbose=2,
