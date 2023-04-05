@@ -64,16 +64,13 @@ class WeightReader:
         self.offset = 0
 
 
-def load_pretrained_weight(model, pretrained_weight_dir, keras_model_dir=None):
+def load_pretrained_weight(model, pretrained_weight_dir):
     """
     Load the pre-trained weight to a Keras model.
     Save the model to keras_model_dir if specified.
     """
     weight_reader = WeightReader(pretrained_weight_dir)
     weight_reader.load_weights(model)
-
-    if keras_model_dir is not None:
-        save_keras_model(model, keras_model_dir)
 
 
 def load_keras_model(model_dir):

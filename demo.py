@@ -47,7 +47,7 @@ downsample = 32
 pretrained_weight_path = './weights/yolov3.weights'
 
 # The path of trained Keras model.
-keras_model_path = './weights/trained_model.h5'
+keras_model_path = './weights/trained_model'
 
 if __name__ == '__main__':
     # Create training and validation dataset
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     # If trained model exists, load the model. Otherwise, create a new model.
     if os.path.isfile(keras_model_path):
-        train_model = load_keras_model(keras_model_path)
+        infer_model = load_keras_model(keras_model_path)
 
     else:
         train_model, infer_model = create_yolov3_model(
@@ -111,16 +111,13 @@ if __name__ == '__main__':
         )
 
         # Load the pre-trained weights into the training model.
-        load_pretrained_weight(train_model, pretrained_weight_path, keras_model_path)
+        load_pretrained_weight(infer_model, pretrained_weight_path)
 
-    # Fit the model.
-    fit_model(train_model, train_generator, valid_generator)
+        # Fit the model.
+        fit_model(train_model, train_generator, valid_generator)
 
-    # Save the model.
-    save_keras_model(train_model, keras_model_path)
-
-    # Load the model as the inferring model.
-    infer_model = load_keras_model(keras_model_path)
+        # Save the model.
+        save_keras_model(infer_model, keras_model_path)
 
     # Evaluation.
     # Compute mAP for all the classes.
