@@ -21,7 +21,7 @@ def fit_model(
     :param train_times_per_epoch: Number of training times per epoch.
     :return:
     """
-    optimizer = Adam(lr=lr, clipnorm=0.001)
+    optimizer = Adam(learning_rate=lr, clipnorm=0.001)
     model.compile(loss=dummy_loss, optimizer=optimizer)
 
     early_stop_callback = EarlyStopping(
