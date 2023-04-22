@@ -30,7 +30,7 @@ def fit_model(
 
     early_stop_callback = EarlyStopping(
         monitor='loss',
-        min_delta=0.01,
+        min_delta=0.0001,
         patience=7,
         mode='min',
         verbose=1
@@ -39,10 +39,10 @@ def fit_model(
     reduce_on_plateau = ReduceLROnPlateau(
         monitor='loss',
         factor=0.1,
-        patience=2,
+        patience=3,
         verbose=1,
         mode='min',
-        epsilon=0.01,
+        min_delta=0.001,
         cooldown=0,
         min_lr=0
     )
