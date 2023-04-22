@@ -193,6 +193,10 @@ def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
             w = anchors[2 * b + 0] * np.exp(w) / net_w  # unit: image width
             h = anchors[2 * b + 1] * np.exp(h) / net_h  # unit: image height
 
+            if np.isnan(w) or np.isinf(w) or w < 0.0001 or w >= 1 \
+                    or np.isnan(h) or np.isinf(w) or h < 0.0001 or h >= 1:
+                continue
+
             # last elements are class probabilities
             classes = netout[row, col, b, 5:]
 
