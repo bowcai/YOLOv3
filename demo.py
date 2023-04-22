@@ -20,6 +20,12 @@ labels = []
 # Batch size.
 batch_size = 16
 
+# Learning rate.
+learning_rate = 1e-4
+
+# Number of epochs.
+num_epochs = 100
+
 # Warmup batches.
 warmup_batches = 3
 
@@ -114,7 +120,9 @@ if __name__ == '__main__':
         # load_pretrained_weight(infer_model, pretrained_weight_path)
 
         # Fit the model.
-        fit_model(train_model, infer_model, train_generator, valid_generator, keras_model_path)
+        fit_model(train_model, infer_model, train_generator,
+                  valid_generator, keras_model_path,
+                  lr=learning_rate, num_epochs=num_epochs)
 
         # Save the model.
         save_keras_model(infer_model, keras_model_path)
