@@ -116,8 +116,8 @@ if __name__ == '__main__':
         # Fit the model.
         fit_model(train_model, infer_model, train_generator, valid_generator, keras_model_path)
 
-        # # Save the model.
-        # save_keras_model(infer_model, keras_model_path)
+        # Save the model.
+        save_keras_model(infer_model, keras_model_path)
 
     # Evaluation.
     # Compute mAP for all the classes.
