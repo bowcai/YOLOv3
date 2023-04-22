@@ -151,6 +151,19 @@ def do_nms(boxes, nms_thresh):
                     boxes[index_j].classes[c] = 0
 
 
+def remove_zeros_after_nms(boxes, obj_thresh):
+    new_boxes = []
+    for box in boxes:
+        nb_class = len(box.classes)
+        has_confident = False
+        for cls in range(nb_class):
+            if box.classes[cls] > obj_thresh:
+                has_confident = True
+                break
+        if has_confident:
+            new_boxes.append(box)
+    return new_boxes
+
 def decode_netout(netout, anchors, obj_thresh, net_h, net_w):
     """
     Decode the output of the network to bounding boxes.

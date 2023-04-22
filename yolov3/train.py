@@ -1,4 +1,3 @@
-import warnings
 from .model import dummy_loss
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from keras.optimizers import Adam

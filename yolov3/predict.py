@@ -1,5 +1,5 @@
 import numpy as np
-from .box import decode_netout, do_nms
+from .box import decode_netout, do_nms, remove_zeros_after_nms
 from .preprocess import preprocess_input, correct_yolo_boxes
 
 
@@ -41,6 +41,7 @@ def get_yolo_boxes(model, images, net_h, net_w, anchors, obj_thresh, nms_thresh)
 
         # suppress non-maximal boxes
         do_nms(boxes, nms_thresh)
+        remove_zeros_after_nms(boxes, obj_thresh)
 
         batch_boxes.append(boxes)
 
